@@ -18,14 +18,14 @@ This repository contains the core implementation of our paper:
 
 ## Installation
 Following is the suggested way to install the dependencies of our code:
-```
+
 conda create -n sketch_diffusion
 conda activate sketch_diffusion
 
 conda install pytorch=1.9.0 torchvision=0.10.0 cudatoolkit=10.2 -c pytorch -c nvidia
 
 pip install tqdm fire einops pyrender pyrr trimesh ocnn timm scikit-image==0.18.2 scikit-learn==0.24.2 pytorch-lightning==1.6.1
-```
+
 
 ## Data Preparation
 ### SDF data creation
@@ -69,3 +69,36 @@ If you find our work useful in your research, please consider citing:
 ```
 
 
+##
+按上述方法配置后出现问题：
+、、、
+NVIDIA GeForce RTX 3090 with CUDA capability sm_86 is not compatible with the current PyTorch installation.
+The current PyTorch install supports CUDA capabilities sm_37 sm_50 sm_60 sm_70.
+If you want to use the NVIDIA GeForce RTX 3090 GPU with PyTorch, please check the instructions at https://pytorch.org/get-started/locally/
+、、、
+解决方法：
+、、、
+%首先卸载已有的pytorch
+pip uninstall torch
+pip uninstall torchvision
+pip uninstall torchaudio
+%安装
+pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118
+、、、
+
+但是奇怪，用conda update cudatoolkit把cudatoolkit更新到11.8后又出现其他问题，所以我现在用的是重新创建的环境LAS2
+
+好吧，也许只是有人在用，如果是这个错误的话：
+、、、
+RuntimeError: CUDA out of memory. 
+、、、
+
+不对，确实有问题：
+、、、
+OSError: /home/yyy/miniconda3/envs/LAS/lib/python3.8/site-packages/torchaudio/lib/libtorchaudio.so: undefined symbol: _ZNK2at10TensorBase8data_ptrIdEEPT_v
+、、、
+
+
+注意，train_mine.sh中的--sdf_folder里不应该直接是.npy文件,应该还有一层文件夹，名称是shapenet各类的编号，如airplane = 02691156，不然会num_samples=0
+
+2023-08-30更新：现在用环境LAS，LAS2被我安装了tensorboard，但没完全装好，现在每次跑代码都会输出一大堆I(info?)和W(warning)，看着烦。LAS等同于此前的LAS2。

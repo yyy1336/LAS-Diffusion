@@ -9,9 +9,12 @@ from utils.utils import exists
 from pytorch_lightning import loggers as pl_loggers
 from utils.utils import ensure_directory, run, get_tensorboard_dir, find_best_epoch
 from utils.shapenet_utils import snc_category_to_synth_id_all
+from torch.utils.tensorboard import SummaryWriter
+import torch
 
 
 def train_from_folder(
+    data_form: int = 0, #0 for original method for the LAS-Diffusion project，1 for data_set_0.2(microstructure_v02)
     sdf_folder: str = "/home/D/dataset/shapenet_sdf",
     sketch_folder: str = "/home/D/dataset/shapenet_edge_our_new",
     data_class: str = "chair",
@@ -56,7 +59,7 @@ def train_from_folder(
         debug = False
 
     data_classes = list(snc_category_to_synth_id_all.keys())
-    data_classes.extend(["debug", "class_5", "class_13", "all"])
+    data_classes.extend(["debug","class_2", "class_5", "class_13", "all"])
     assert data_class in data_classes
 
     results_folder = results_folder + "/" + name
@@ -67,7 +70,10 @@ def train_from_folder(
     if new:
         run(f"rm -rf {results_folder}/*")
 
+
     model_args = dict(
+#        tb_writer=tb_writer, #yyy
+        data_form=data_form,
         results_folder=results_folder,
         sdf_folder=sdf_folder,
         sketch_folder=sketch_folder,
@@ -103,7 +109,8 @@ def train_from_folder(
     seed_everything(seed)
 
     model = DiffusionModel(**model_args)
-
+   
+  
     if in_azure:
         try:
             log_dir = get_tensorboard_dir()
@@ -119,6 +126,25 @@ def train_from_folder(
         default_hp_metric=False
     )
 
+#    print(log_dir)
+#     tb_writer = SummaryWriter (log_dir=log_dir) #yyy
+#    print(tb_writer)
+#    print(1)
+
+    # TODO: Visualize the network model as a graph
+    # init_occupancy=torch.zeros((batch_size,1,image_size,image_size,image_size))
+   # init_t=torch.ones((16))
+   # init_t=torch.tensor([-0.9068, -1.8652, -4.0730, -6.2264,  0.7031,  2.1166, -1.3802, -1.7290,
+   #     -8.9910,  2.0590, -1.0757, -1.8619, -3.2745,  1.3725, -3.6298, -8.7354],
+   #    device='cuda:0')
+   #  tb_writer.add_graph(model.model.denoise_fn,init_occupancy)  #yyy: 'model.model.denoise_fn' is the unet, this line of code makes init_occupancy pass forward() and add the unet model to tb_writer
+
+    # yyy: Visualize the network model as a graph
+    # TODO：Here will make an error when you change the batch size and continue training，The current solution is simply to comment out these two sentences when continue training
+    init_occupancy = torch.zeros((batch_size, 1, image_size, image_size, image_size))
+    tb_logger.experiment.add_graph(model.model.denoise_fn, init_occupancy)
+
+    
     checkpoint_callback = ModelCheckpoint(
         monitor="current_epoch",
         dirpath=results_folder,
@@ -162,6 +188,9 @@ def train_from_folder(
         trainer.fit(model, ckpt_path=os.path.join(results_folder, last_ckpt))
     else:
         trainer.fit(model)
+
+
+
 
 
 if __name__ == '__main__':

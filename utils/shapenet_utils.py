@@ -23,6 +23,14 @@ snc_category_to_synth_id_5 = {
 }
 
 
+snc_synth_id_to_category_2 = {
+    '00000001': 'test2_high',   '00000002':'test2_low',
+}
+
+snc_category_to_synth_id_2 = {
+    'test2_high': '00000001',   'test2_low': '00000002',
+}
+
 snc_synth_id_to_category_5 = {
     '02691156': 'airplane',   '02958343': 'car',        '03001627': 'chair',
     '04379243': 'table',
@@ -49,7 +57,9 @@ snc_synth_id_to_category_all = {
     '03991062': 'pot',       '04004475': 'printer',    '04074963': 'remote_control',
     '04090263': 'rifle',     '04099429': 'rocket',     '04225987': 'skateboard',
     '04256520': 'sofa',      '04330267': 'stove',      '04530566': 'vessel',
-    '04554684': 'washer',    '02858304': 'boat',       '02992529': 'cellphone'
+    '04554684': 'washer',    '02858304': 'boat',       '02992529': 'cellphone',
+    '00000000': 'bulk_02', #added by yyy
+    '00000001': 'test2_high',   '00000002':'test2_low',
 }
 
 
@@ -72,5 +82,7 @@ snc_category_to_synth_id_all = {
     'pot': '03991062',       'printer': '04004475',    'remote_control': '04074963',
     'rifle': '04090263',     'rocket': '04099429',     'skateboard': '04225987',
     'sofa': '04256520',      'stove': '04330267',      'vessel': '04530566',
-    'washer': '04554684',    'boat': '02858304',       'cellphone': '02992529'
+    'washer': '04554684',    'boat': '02858304',       'cellphone': '02992529',
+    'bulk_02': '00000000', #added by yyy
+    'test2_high': '00000001',   'test2_low': '00000002',
 }

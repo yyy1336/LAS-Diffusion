@@ -88,7 +88,7 @@ class SDF_sparsity_Dataset(data.Dataset):
                     lines = fid.readlines()
                 for i in range(len(lines)):
                     lines[i] = os.path.join(
-                        folder, label, lines[i].replace(".mat\n", ".npy"))
+                        folder, label, lines[i].replace("\n", ".npy"))
                 self.sdf_paths.extend(lines)
         else:
             for _data_class in _data_classes:
@@ -104,7 +104,7 @@ class SDF_sparsity_Dataset(data.Dataset):
                 [p for p in Path(f'{_path}').glob('**/*.npy')])
 
         depth = int(np.log2(size))
-        full_depth = 1
+        full_depth = 1   #yyy
 
         self.transform = SparsityTransform(depth=depth, full_depth=full_depth, size=size, sdf_clip_value=sdf_clip_value,
                                            noise_level=noise_level)
@@ -185,7 +185,7 @@ class SDF_sparsity_Dataset_for_forward(data.Dataset):
             sdf_paths.sort(key=self.sort_func)
         self.paths = sdf_paths[start_index:end_index]
         depth = int(np.log2(size))
-        full_depth = 1
+        full_depth = 1   #yyy
         self.transform = SparsityTransform_for_forward(
             depth=depth, full_depth=full_depth, size=size, base_size=base_size)
 

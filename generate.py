@@ -35,8 +35,11 @@ def generate_unconditional(
     for batch in batches:
         res_tensor = generator.sample_unconditional(
             batch_size=batch, steps=steps, truncated_index=truncated_time)
+        # print('res_tensor:', res_tensor.shape)
+
         for i in tqdm(range(batch), desc=f'save results in one batch in {root_dir}'):
             voxel = res_tensor[i].squeeze().cpu().numpy()
+            # print('voxel:', voxel.shape)
             np.save(os.path.join(root_dir, str(index)), voxel)
             try:
 

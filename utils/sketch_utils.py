@@ -8,10 +8,12 @@ try:
 except ImportError:
     BICUBIC = Image.BICUBIC
 
-try:
-    import cv2
-except ImportError:
-    pass
+
+import cv2
+#try:
+#    import cv2
+#except ImportError:
+#    pass
 
 
 def get_sketch(image):

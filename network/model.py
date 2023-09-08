@@ -14,7 +14,7 @@ TRUNCATED_TIME = 0.7
 
 class OccupancyDiffusion(nn.Module):
     def __init__(
-            self,
+            self, #yyy: no need to add tb_writer because it's already in self
             image_size: int = 64,
             base_channels: int = 128,
             attention_resolutions: str = "16,8",

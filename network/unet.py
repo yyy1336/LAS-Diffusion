@@ -120,11 +120,14 @@ class UNetModel(nn.Module):
 
         self.out = conv_nd(world_dims, base_channels, 1, 3, padding=1)
 
-    def forward(self, x, t, img_condition, text_condition, projection_matrix, x_self_cond=None, kernel_size=None):
+    def forward(self, x, t=torch.ones((16)), img_condition=None, text_condition=None, projection_matrix=None, x_self_cond=None, kernel_size=None): #yyy，这个16是什么，是batch_size吗，那么该怎么传进来呢？
+    
+#        print(x.shape) #yyy
+#        print(t.shape)
 
         x_self_cond = default(x_self_cond, lambda: torch.zeros_like(x))
         x = torch.cat((x, x_self_cond), dim=1)
-
+        
         if self.verbose:
             print("input size:")
             print(x.shape)

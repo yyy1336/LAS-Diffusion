@@ -11,11 +11,14 @@ from network.model import OccupancyDiffusion
 import torch.nn as nn
 import os
 import random
+from torch.utils.tensorboard import SummaryWriter
+import torch
 
 
 class DiffusionModel(LightningModule):
     def __init__(
         self,
+        data_form:int = 0,
         sdf_folder: str = "",
         sketch_folder: str = "",
         data_class: str = "chair",
@@ -50,11 +53,15 @@ class DiffusionModel(LightningModule):
     ):
 
         super().__init__()
+        self.data_form=data_form #yyy
+#        self.tb_writer=tb_writer #yyy
         self.save_hyperparameters()
 
         self.automatic_optimization = False
         self.results_folder = Path(results_folder)
-        self.model = OccupancyDiffusion(image_size=image_size, base_channels=base_channels,
+        self.model = OccupancyDiffusion(
+#        tb_writer=tb_writer, #yyy
+                                        image_size=image_size, base_channels=base_channels,
                                         attention_resolutions=attention_resolutions,
                                         with_attention=with_attention,
                                         kernel_size=kernel_size,
@@ -115,7 +122,8 @@ class DiffusionModel(LightningModule):
         return [optimizer]
 
     def train_dataloader(self):
-        _dataset = occupancy_field_Dataset(sdf_folder=self.sdf_folder,
+        _dataset = occupancy_field_Dataset(data_form=self.data_form,
+                                           sdf_folder=self.sdf_folder,
                                            sketch_folder=self.sketch_folder,
                                            data_class=self.data_class,
                                            size=self.image_size,
@@ -158,7 +166,9 @@ class DiffusionModel(LightningModule):
         loss = self.model.training_loss(
             occupancy, image_features, text_feature, projection_matrix, kernel_size=kernel_size).mean()
 
-        self.log("loss", loss.clone().detach().item(), prog_bar=True)
+        self.log("loss", loss.clone().detach().item(), on_step=True, on_epoch=True, prog_bar=True, logger=True)  #if you use on_epoch=True,it will automatically cal the average loos in one epoch
+        # self.logger.experiment.add_scalar("loss_yyy_step", loss.clone().detach().item(), self.global_step)
+        # self.logger.experiment.add_scalar("loss_yyy_epoch_F", loss.clone().detach().item(), self.current_epoch)
 
         opt = self.optimizers()
         opt.zero_grad()
@@ -167,8 +177,27 @@ class DiffusionModel(LightningModule):
             self.model.parameters(), self.gradient_clip_val)
         opt.step()
 
+
         self.update_EMA()
 
     def on_train_epoch_end(self):
-        self.log("current_epoch", self.current_epoch)
+        # avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+        # self.logger.experiment.add_scalar("loss", avg_loss, self.current_epoch)
+        self.log("current_epoch",self.current_epoch, logger=True)
+
+        for name, params in self.named_parameters():
+            self.logger.experiment.add_histogram(name, params.clone().cpu().data.numpy(), self.current_epoch)
+            if self.current_epoch > 0:   #TODO:Solve the problem more elegantly that no gradients for the first epoch when continue training
+                if params.requires_grad:
+                    self.logger.experiment.add_histogram(name + '/grad', params.grad.clone().cpu().data.numpy(),
+                                                         self.current_epoch)
+
+
+        # TODO: Visualize the network model as a graph
+        # ok, know it is done in train.py
+        # if (self.current_epoch == 0):
+        #     sampleVoxel = torch.rand((128, 1, 64, 64, 64))
+        #     self.logger.experiment.add_graph(self.model.denoise_fn, sampleVoxel)
+            
         return super().on_train_epoch_end()
+

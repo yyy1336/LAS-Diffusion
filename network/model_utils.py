@@ -217,6 +217,8 @@ class CrossAttention(nn.Module):
             self.condition_pe.to(x.device).unsqueeze(0)
         v = self.v(sketch_feature) + \
             self.condition_pe.to(x.device).unsqueeze(0)
+            
+        print("q:",q.shape,"k:",k.shape,"v:",v.shape)
 
         attn, _ = self.attn(q, k, v, attn_mask=attn_mask)
         return attn.transpose(1, 2).reshape(x.shape[0], self.feature_dim, *(self.image_size,) * self.world_dims)
